@@ -9,6 +9,7 @@
 #include <cmath>
 #include <bitset>
 #include "memory.h"
+#include "Utility.h"
 
 using namespace std;
 
@@ -16,6 +17,14 @@ int main()
 {
 	memory test; // instatiation
 
+	Utility my_util;
+
+	char* binary = new char[32];
+
+	int err = my_util.HexToBinary("00000011", binary, false);
+
+
+/*
 	test.STW(1,0,0);
 	test.display(0,0);
 	test.STW(2,0,1);
@@ -29,6 +38,6 @@ int main()
 	cout << "Temp value: " << temp << endl;
 
 	test.display_all();
-
+*/
 	cin.get();
 }
