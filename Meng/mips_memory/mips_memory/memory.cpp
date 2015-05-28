@@ -26,7 +26,7 @@ memory::~memory()
 		cout << "MIPS-Lite memory module destroyed" << endl;
 }
 
-int memory::STW(long Rt, long Rs, long Imm)
+int memory::store(long Rt, long Rs, long Imm)
 {
 	if (Rt >= (LineSize))
 	{
@@ -43,7 +43,7 @@ int memory::STW(long Rt, long Rs, long Imm)
 	else return -1; // Store failed
 }
 
-int memory::LDW(long & Rt, long Rs, long Imm)
+int memory::load(long & Rt, long Rs, long Imm)
 {
 	if (!probe(Rs, Imm))
 	{
