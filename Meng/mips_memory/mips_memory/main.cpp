@@ -19,10 +19,15 @@ int main()
 
 	Utility my_util;
 
-	char* binary = new char[32];
+	char* binary_buff = new char[32];
 
-	int err = my_util.HexToBinary("00000011", binary, false);
+	char* hex_buff = new char[8];
 
+	int err = 0;
+
+	err = my_util.HexToBinary("00000011", binary_buff, false);
+
+	err = my_util.HexToBinary(hex_buff, "00000000000000000000000000010001", true);
 
 /*
 	test.STW(1,0,0);

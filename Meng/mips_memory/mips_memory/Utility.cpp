@@ -8,14 +8,22 @@ int Utility:: HexToBinary(char* hexadecimal, char* binary, bool inverse)
 	// Binary to HEX
 	if (inverse)
 	{
-		char temp[4];
+		char* temp;
 
-		for (int i = 0; i <= (int)strlen(binary); i+4){
-			for (int j = 0; j < i; j++){
-				temp[j] += binary[j];
+		int count = (int)strlen(binary) / 4;
+
+		for (int i = 0; i <= count; i++){
+			int br = i * 4;
+
+			for (int j = 0; j < 4; j++){
+				temp[j] = binary[br];
+				br++;
 			}
-			hexadecimal += GetHexadecimalFromBinary(temp);
+			hexadecimal[i] = GetHexadecimalFromBinary(temp);
 		}
+
+		error = 0;
+
 		return error;
 	}
 
@@ -35,6 +43,7 @@ int Utility:: HexToBinary(char* hexadecimal, char* binary, bool inverse)
 		
 
 		delete[] cstr;
+		error = 0;
 	}
 	return error;
 }
@@ -53,24 +62,22 @@ int Utility::BinaryToInt(char* binary, int integer, bool inverse)
 
 char Utility::GetHexadecimalFromBinary(char* binary){
 
-	string b = binary;
-
-	if (b.compare("0000")){ return '0'; }
-	if (b.compare("0001")){ return '1'; }
-	if (b.compare("0010")){ return '2'; }
-	if (b.compare("0011")){ return '3'; }
-	if (b.compare("0100")){ return '4'; }
-	if (b.compare("0101")){ return '5'; }
-	if (b.compare("0110")){ return '6'; }
-	if (b.compare("0111")){ return '7'; }
-	if (b.compare("1000")){ return '8'; }
-	if (b.compare("1001")){ return '9'; }
-	if (b.compare("1010")){ return 'A'; }
-	if (b.compare("1011")){ return 'B'; }
-	if (b.compare("1100")){ return 'C'; }
-	if (b.compare("1101")){ return 'D'; }
-	if (b.compare("1110")){ return 'E'; }
-	if (b.compare("1111")){ return 'F'; }
+	if (binary == "0000"){ return '0'; }
+	if (binary == "0001"){ return '1'; }
+	if (binary == "0010"){ return '2'; }
+	if (binary == "0011"){ return '3'; }
+	if (binary == "0100"){ return '4'; }
+	if (binary == "0101"){ return '5'; }
+	if (binary == "0110"){ return '6'; }
+	if (binary == "0111"){ return '7'; }
+	if (binary == "1000"){ return '8'; }
+	if (binary == "1001"){ return '9'; }
+	if (binary == "1010"){ return 'A'; }
+	if (binary == "1011"){ return 'B'; }
+	if (binary == "1100"){ return 'C'; }
+	if (binary == "1101"){ return 'D'; }
+	if (binary == "1110"){ return 'E'; }
+	if (binary == "1111"){ return 'F'; }
 }
 
 string Utility::GetBinaryFromHexadecimal(char hexadecimal){
