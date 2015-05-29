@@ -28,8 +28,8 @@ class memory
 public:
 	memory(); // constructor
 	~memory(); // destructor
-	int LDW(long & Rt, long Rs, long Imm);
-	int STW(long Rt, long Rs, long Imm);
+	int load(long & Rt, long Rs, long Imm);
+	int store(long Rt, long Rs, long Imm);
 	int probe(long Rs, long Imm);
 	int display(long Rs, long Imm);
 	int display_all();
