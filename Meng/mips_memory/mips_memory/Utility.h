@@ -1,19 +1,24 @@
+# pragma once
 
 #include <string>
 #include <stdlib.h>
+#include <fstream>
+#include "memory.h"
 
 using namespace std;
 
 class Utility{
 
 public:
-	int HexToBinary(char* hexadecimal, char* binary, bool inverse);
+	int HexToBinary(string & hexadecimal, string & binary, bool inverse);
 
-	int BinaryToInt(char* binary, int integer, bool inverse);
+	int BinaryToInt(string binary, int integer, bool inverse);
 
-	char GetHexadecimalFromBinary(char* binary);
+	char GetHexadecimalFromBinary(string binary);
 
 	string GetBinaryFromHexadecimal(char hexadecimal);
+
+	int OpenTraceAndLoadMemory(string filename, entry* mem);
 
 };
 

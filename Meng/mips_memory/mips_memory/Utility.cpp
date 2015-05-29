@@ -1,25 +1,28 @@
 
 #include "Utility.h"
 
-int Utility:: HexToBinary(char* hexadecimal, char* binary, bool inverse)
+int Utility:: HexToBinary(string & hexadecimal, string & binary, bool inverse)
 {
 	int error = -1;
 
 	// Binary to HEX
 	if (inverse)
 	{
-		char* temp;
+		string temp;
 
-		int count = (int)strlen(binary) / 4;
+		int count = binary.length() / 4;
 
-		for (int i = 0; i <= count; i++){
+		for (int i = 0; i < count; i++){
 			int br = i * 4;
 
 			for (int j = 0; j < 4; j++){
-				temp[j] = binary[br];
+				temp += binary[br];
 				br++;
 			}
-			hexadecimal[i] = GetHexadecimalFromBinary(temp);
+			
+			hexadecimal += GetHexadecimalFromBinary(temp);
+
+			temp = "";
 		}
 
 		error = 0;
@@ -29,10 +32,13 @@ int Utility:: HexToBinary(char* hexadecimal, char* binary, bool inverse)
 
 	// HEX to Binary
 
-	for (int i = 0; i <= (int)strlen(hexadecimal); i++){
+	for (int i = 0; i < hexadecimal.length(); i++){
+
 		string b = GetBinaryFromHexadecimal(hexadecimal[i]);
 
-		char *cstr = new char[b.length() + 1];
+		binary += b;
+
+		/*char *cstr = new char[b.length() + 1];
 		strcpy(cstr, b.c_str());
 		int jr = 0;
 		for (int j = (i * 4); j < (i * 4) + 4; j++){
@@ -42,13 +48,47 @@ int Utility:: HexToBinary(char* hexadecimal, char* binary, bool inverse)
 		}
 		
 
-		delete[] cstr;
+		delete[] cstr;*/
 		error = 0;
 	}
 	return error;
 }
 
-int Utility::BinaryToInt(char* binary, int integer, bool inverse)
+int Utility::OpenTraceAndLoadMemory(string filename, entry* mem)
+{
+	int err = -1;
+
+	ifstream file(filename);
+
+	string hex;
+
+	int index = 0;
+
+	try
+	{
+		while (file >> hex)
+		{
+			string binary;
+
+			HexToBinary(hex, binary, false);
+
+			long b = stol(binary, nullptr, 2);
+
+			// store b to the memory
+
+			mem[index].address = index;
+			mem[index].word = b;
+		}
+		err = 0;
+		return err;
+	}
+	catch (exception ex){
+		return err;
+	}
+}
+
+
+int Utility::BinaryToInt(string binary, int integer, bool inverse)
 {
 	int error = -1;
 
@@ -60,7 +100,7 @@ int Utility::BinaryToInt(char* binary, int integer, bool inverse)
 	return error;
 }
 
-char Utility::GetHexadecimalFromBinary(char* binary){
+char Utility::GetHexadecimalFromBinary(string binary){
 
 	if (binary == "0000"){ return '0'; }
 	if (binary == "0001"){ return '1'; }
@@ -78,6 +118,7 @@ char Utility::GetHexadecimalFromBinary(char* binary){
 	if (binary == "1101"){ return 'D'; }
 	if (binary == "1110"){ return 'E'; }
 	if (binary == "1111"){ return 'F'; }
+	return '-1';
 }
 
 string Utility::GetBinaryFromHexadecimal(char hexadecimal){
@@ -98,4 +139,6 @@ string Utility::GetBinaryFromHexadecimal(char hexadecimal){
 	if (hexadecimal == 'D') { return "1101"; }
 	if (hexadecimal == 'E') { return "1110"; }
 	if (hexadecimal == 'F') { return "1111"; }
+	
+	return "";
 }

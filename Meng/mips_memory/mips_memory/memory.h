@@ -1,7 +1,7 @@
 // Author: Meng Lei
 // MIPS-Lite ISA Memory Simulator
 // memory.h: header file for memory implementation
-
+#pragma once
 #include <stdlib.h>
 #include <iostream>
 #include <cstring>

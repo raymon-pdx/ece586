@@ -19,30 +19,36 @@ int main()
 
 	Utility my_util;
 
-	char* binary_buff = new char[32];
+	string binary_buff;
 
-	char* hex_buff = new char[8];
+	string hex_buff;
+
+	entry mem[1024];
+
+	string hex_test = "00000011";
+	string bin_test = "00000000000000000000000000010001";
 
 	int err = 0;
 
-	err = my_util.HexToBinary("00000011", binary_buff, false);
+	err = my_util.HexToBinary(hex_test, binary_buff, false);
 
-	err = my_util.HexToBinary(hex_buff, "00000000000000000000000000010001", true);
+	err = my_util.HexToBinary(hex_buff, bin_test, true);
 
-/*
-	test.STW(1,0,0);
-	test.display(0,0);
-	test.STW(2,0,1);
-	test.display(0,1);
+	err = my_util.OpenTraceAndLoadMemory("Trace.txt", mem);
 
-	test.display(0,3);
+	//test.STW(1,0,0);
+	//test.display(0,0);
+	//test.STW(2,0,1);
+	//test.display(0,1);
 
-	long temp = 0;
+	//test.display(0,3);
 
-	test.LDW(temp, 0, 1);
-	cout << "Temp value: " << temp << endl;
+	//long temp = 0;
 
-	test.display_all();
-*/
+	//test.LDW(temp, 0, 1);
+	//cout << "Temp value: " << temp << endl;
+
+	//test.display_all();
+
 	cin.get();
 }
