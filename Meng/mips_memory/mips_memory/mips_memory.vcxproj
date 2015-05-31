@@ -63,11 +63,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="memory.h" />
+    <ClInclude Include="Pipeline.h" />
     <ClInclude Include="Utility.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="memory.cpp" />
+    <ClCompile Include="Pipeline.cpp" />
     <ClCompile Include="Utility.cpp" />
   </ItemGroup>
   <ItemGroup>

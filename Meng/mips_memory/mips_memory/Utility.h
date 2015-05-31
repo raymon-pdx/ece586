@@ -10,15 +10,22 @@ using namespace std;
 class Utility{
 
 public:
-	int HexToBinary(string & hexadecimal, string & binary, bool inverse);
+	int HexToBinary(string &, string &, bool);
 
-	int BinaryToInt(string binary, int integer, bool inverse);
+	int BinaryToInt(string, int, bool );
 
-	char GetHexadecimalFromBinary(string binary);
+	char GetHexadecimalFromBinary(string );
 
-	string GetBinaryFromHexadecimal(char hexadecimal);
+	string GetBinaryFromHexadecimal(char);
 
-	int OpenTraceAndLoadMemory(string filename, entry* mem);
+	string ToLittleEndian(string);
 
+	int OpenTraceAndLoadMemory(string, entry* );
+
+	bool InstructionType(int);
+
+	string GetBits(string, int, int);
+
+	string BitsReverse(string, int, int);
 };
 

@@ -72,19 +72,40 @@ int Utility::OpenTraceAndLoadMemory(string filename, entry* mem)
 
 			HexToBinary(hex, binary, false);
 
-			long b = stol(binary, nullptr, 2);
+			// changes binary string to long. 
+			// changes the format of binary string.
+			long long b = stoll(binary, nullptr, 2);
 
 			// store b to the memory
 
 			mem[index].address = index;
 			mem[index].word = b;
+
+			index++;
 		}
-		err = 0;
+		err = index;
 		return err;
 	}
 	catch (exception ex){
 		return err;
 	}
+}
+
+bool Utility::InstructionType(int opcode)
+{
+	bool returnValue = false;
+	
+	//All opcode without the Immediate value
+	if (opcode == 0
+		|| opcode == 2
+		|| opcode == 4
+		|| opcode == 6
+		|| opcode == 8
+		|| opcode == 10)
+	{
+		returnValue = true;
+	}
+		return returnValue;
 }
 
 
@@ -98,6 +119,31 @@ int Utility::BinaryToInt(string binary, int integer, bool inverse)
 	}
 
 	return error;
+}
+
+string Utility::ToLittleEndian(string binary)
+{
+	string temp = "";
+
+	temp += GetBits(binary, 24, 31);
+	temp += GetBits(binary, 16, 23);
+	temp += GetBits(binary, 8, 15);
+	temp += GetBits(binary, 0, 7);
+
+	return temp;
+}
+
+string Utility::GetBits(string instr, int start, int end){
+
+	string temp;
+
+	for (int i = start; i <= end; i++)
+	{
+		temp += instr[i];
+	}
+
+	return temp;
+
 }
 
 char Utility::GetHexadecimalFromBinary(string binary){
