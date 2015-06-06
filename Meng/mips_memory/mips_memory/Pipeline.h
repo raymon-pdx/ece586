@@ -19,8 +19,10 @@ struct InstructionParts {
 
 	bool insr_type;
 
-	bool is_load = false;
-	bool is_store = false;
+	bool is_load;
+	bool is_store;
+
+	bool reset;
 };
 
 class Pipeline
@@ -29,7 +31,7 @@ class Pipeline
 public:
 	int Fetch(int &, entry*, long &);
 	int Decode(long long, InstructionParts &);
-	int Execute(InstructionParts &, long *, long &);
+	int Execute(InstructionParts &, long *, long &, int &);
 	int Memory();
 	int WriteBack();
 

@@ -27,9 +27,13 @@ int states[5];
 
 struct instruction_circular_buffer{
 
-	int stage = 0;
+	int stage;
 	long hex_instr;
 	InstructionParts parts;
+
+	instruction_circular_buffer(){
+		stage = 0;
+	}
 
 } instr_circular_buffer[5];
 
@@ -70,37 +74,53 @@ int main()
 			instr_circular_buffer[i].stage = next_stage;
 
 			switch (next_stage){
-				
+
+				// FETCH
+				case 1:
+					instr_circular_buffer[i].hex_instr = mem[PC].word;
+					PC++;
+					break;
+
 				// DECODE
 				case 2:
 					err = p.Decode(instr_circular_buffer[i].hex_instr, parsedInstr);
 					break;
 				// EXECUTE
 				case 3:
-					err = p.Execute(parsedInstr, registers, result);
+					err = p.Execute(parsedInstr, registers, result, PC);
+
+					if(parsedInstr.reset){
+
+						for(int j = 0; j < 5; j++)
+						{
+							instr_circular_buffer[i].stage = 0;
+						}
+						
+						break; // break out of the for - inner loop
+					}
+
 					break;
 				// MEMEORY
 				case 4:
 
 					if (parsedInstr.is_load){
-						//parsedInstr.rd = mem[result];
+						parsedInstr.rd = mem[static_cast<int>(result)].word;
 					}
 
 					if (parsedInstr.is_store){
-						//mem[result] = result;
+						mem[static_cast<int>(result)].word = result;
 					}
 
 					break;
 				// WRITE BACK
 				case 5:
 					registers[parsedInstr.rd] = result;
+					instr_circular_buffer[i].stage = 0;
+
 					break;
-				// ALL STAGE DONE
-				// FETCH
-				case 1:
+
+				// Out of the pipeline..... somethign is wrong
 				default:
-					instr_circular_buffer[i].hex_instr = mem[PC].word;
-					PC++;
 					break;
 			}
 		}

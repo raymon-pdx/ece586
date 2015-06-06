@@ -63,7 +63,7 @@ int Pipeline::Decode(long long instr, InstructionParts & parsedInstrs){
 	}
 }
 
-int Pipeline::Execute(InstructionParts & parsedInstr, long * registers, long & result)
+int Pipeline::Execute(InstructionParts & parsedInstr, long * registers, long & result, int & PC)
 {
 
 	long source1 = 0;
@@ -138,6 +138,14 @@ int Pipeline::Execute(InstructionParts & parsedInstr, long * registers, long & r
 			result = source1 + source2;
 			break;
 		case 14:	// BZ
+			if (parsedInstr.rs == 0)
+			{
+				PC += source2;
+
+				parsedInstr.reset = true;
+			}
+
+			parsedInstr.reset = false;
 
 			break;
 		case 15:	// BEQ
