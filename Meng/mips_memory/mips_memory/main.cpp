@@ -19,6 +19,20 @@ using namespace std;
 
 int PC = 0;
 
+int CLK = 1;
+
+long registers[32];
+
+int states[5];
+
+struct instruction_circular_buffer{
+
+	int stage = 0;
+	long hex_instr;
+	InstructionParts parts;
+
+} instr_ring_buffer[5];
+
 int main()
 {
 
@@ -43,34 +57,44 @@ int main()
 
 	int err = -1;
 
-	while (PC <= instrCount)
+	long result;
+
+	while (CLK)
 	{
-		
 		InstructionParts parsedInstr;
 
-		long long instr;
+		for (int i = 0; i < 5; i++)
+		{
+			int next_stage = instr_ring_buffer[i].stage + 1;
 
-		instr = mem[PC].word; // FETCH
+			instr_ring_buffer[i].stage = next_stage;
 
-		err = p.Decode(instr, parsedInstr);
-		
+			switch (next_stage){
+				// FETCH
+				case 1:
+					instr_ring_buffer[i].hex_instr = mem[PC].word;
+					PC++;
+					break;
+				// DECODE
+				case 2:
+					err = p.Decode(instr_ring_buffer[i].hex_instr, parsedInstr);
+					break;
+				// EXECUTE
+				case 3:
+					err = p.Execute(parsedInstr, registers, result);
+					break;
+				// MEMEORY
+				case 4:
+					break;
+				// WRITE BACK
+				case 5:
+					break;
+				// ALL STAGE DONE
+				default:
+					break;
+			}
+		}
 	}
-	
 
-
-	//test.STW(1,0,0);
-	//test.display(0,0);
-	//test.STW(2,0,1);
-	//test.display(0,1);
-
-	//test.display(0,3);
-
-	//long temp = 0;
-
-	//test.LDW(temp, 0, 1);
-	//cout << "Temp value: " << temp << endl;
-
-	//test.display_all();
-
-	cin.get();
+	return 0;
 }

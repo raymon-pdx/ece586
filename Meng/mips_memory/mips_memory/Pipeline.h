@@ -26,7 +26,7 @@ class Pipeline
 public:
 	int Fetch(int &, entry*, long &);
 	int Decode(long long, InstructionParts &);
-	int Execute();
+	int Execute(InstructionParts &, long *, long &);
 	int Memory();
 	int WriteBack();
 
