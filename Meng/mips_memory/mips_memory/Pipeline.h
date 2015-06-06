@@ -18,6 +18,9 @@ struct InstructionParts {
 	int imm;
 
 	bool insr_type;
+
+	bool is_load = false;
+	bool is_store = false;
 };
 
 class Pipeline

@@ -127,9 +127,15 @@ int Pipeline::Execute(InstructionParts & parsedInstr, long * registers, long & r
 		case 12:	// LDW
 			// goto memory
 			// Eff Address = source1 + source2;
+			parsedInstr.is_load = true;
+			parsedInstr.is_store = false;
+			result = source1 + source2;
 			break;
 		case 13:	// STW
 			// Eff address = source1 + source2;
+			parsedInstr.is_load = false;
+			parsedInstr.is_store = true;
+			result = source1 + source2;
 			break;
 		case 14:	// BZ
 

@@ -31,7 +31,7 @@ struct instruction_circular_buffer{
 	long hex_instr;
 	InstructionParts parts;
 
-} instr_ring_buffer[5];
+} instr_circular_buffer[5];
 
 int main()
 {
@@ -65,19 +65,15 @@ int main()
 
 		for (int i = 0; i < 5; i++)
 		{
-			int next_stage = instr_ring_buffer[i].stage + 1;
+			int next_stage = instr_circular_buffer[i].stage + 1;
 
-			instr_ring_buffer[i].stage = next_stage;
+			instr_circular_buffer[i].stage = next_stage;
 
 			switch (next_stage){
-				// FETCH
-				case 1:
-					instr_ring_buffer[i].hex_instr = mem[PC].word;
-					PC++;
-					break;
+				
 				// DECODE
 				case 2:
-					err = p.Decode(instr_ring_buffer[i].hex_instr, parsedInstr);
+					err = p.Decode(instr_circular_buffer[i].hex_instr, parsedInstr);
 					break;
 				// EXECUTE
 				case 3:
@@ -85,12 +81,26 @@ int main()
 					break;
 				// MEMEORY
 				case 4:
+
+					if (parsedInstr.is_load){
+						//parsedInstr.rd = mem[result];
+					}
+
+					if (parsedInstr.is_store){
+						//mem[result] = result;
+					}
+
 					break;
 				// WRITE BACK
 				case 5:
+					registers[parsedInstr.rd] = result;
 					break;
 				// ALL STAGE DONE
+				// FETCH
+				case 1:
 				default:
+					instr_circular_buffer[i].hex_instr = mem[PC].word;
+					PC++;
 					break;
 			}
 		}
