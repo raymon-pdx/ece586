@@ -39,7 +39,10 @@ int Pipeline::Decode(long instr, InstructionParts & parsedInstrs){
 
 		Utility my_util;
 
-		// I - Type Instruction
+		
+		//true - J-type
+		//false - I-type
+		// J -Type Instruction
 		if (my_util.InstructionType(opcode))
 		{
 			parsedInstrs.opcode = opcode;
@@ -47,7 +50,7 @@ int Pipeline::Decode(long instr, InstructionParts & parsedInstrs){
 			parsedInstrs.rt = strtoul(util.GetBits(binaryInstr, 11, 15).c_str(), nullptr, 2);
 			parsedInstrs.rd = strtoul(util.GetBits(binaryInstr, 16, 20).c_str(), nullptr, 2);
 		}
-		// J -Type Instruction
+		//I - Type Instruction
 		else
 		{
 			parsedInstrs.opcode = opcode;
@@ -75,7 +78,7 @@ int Pipeline::Execute(InstructionParts & parsedInstr,
 	long source2 = 0;
 	long destination = 0;
 
-	if (!parsedInstr.insr_type)  // J - Type
+	if (parsedInstr.insr_type)  // I- type
 	{
 		source1 = registers[parsedInstr.rs];
 		source2 = registers[parsedInstr.rt];
@@ -111,7 +114,7 @@ int Pipeline::Execute(InstructionParts & parsedInstr,
 			break;
 		}
 	}
-	else // I-TYPE
+	else // J-TYPE
 	{
 		source1 = registers[parsedInstr.rs];
 		source2 = parsedInstr.imm;
@@ -158,7 +161,7 @@ int Pipeline::Execute(InstructionParts & parsedInstr,
 			result = source1 + source2;
 			break;
 		case 14:	// BZ
-			
+
 			if (source1 == 0)
 			{
 				my_dump.control_instruct += 1;
@@ -172,7 +175,7 @@ int Pipeline::Execute(InstructionParts & parsedInstr,
 
 			break;
 		case 15:	// BEQ
-			
+
 			source2 = registers[parsedInstr.rt];
 
 			if (source1 == source2)
@@ -187,7 +190,7 @@ int Pipeline::Execute(InstructionParts & parsedInstr,
 			parsedInstr.reset = false;
 			break;
 		case 16:	// JR
-			
+
 			my_dump.control_instruct += 1;
 
 			PC += source1;

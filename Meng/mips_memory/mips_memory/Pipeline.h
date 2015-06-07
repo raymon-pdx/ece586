@@ -25,7 +25,14 @@ struct InstructionParts {
 
 	bool reset;
 
-	InstructionParts() : is_load(false),is_store(false), reset(false){}
+	InstructionParts() : is_load(false),
+		is_store(false), 
+		reset(false),
+		opcode(0),
+		rs(0),
+		rt(0),
+		rd(0),
+		imm(0){}
 };
 
 class Pipeline

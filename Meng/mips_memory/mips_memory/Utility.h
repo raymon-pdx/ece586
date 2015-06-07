@@ -32,6 +32,6 @@ public:
 
 	int Nullify(int *);
 
-	int Flush();
+	int fill_with_zeroes(long *);
 };
 

@@ -13,6 +13,11 @@
 #include "Pipeline.h"
 #include "statistics.h"
 
+#define REG_LENGTH  32
+#define MEM_SIZE  1024
+#define PIPELINE_SIZE 5
+#define CIRCULAR_BUFFER_SIZE 5
+
 using namespace std;
 
 //GLOBALS
@@ -21,10 +26,6 @@ using namespace std;
 int PC = 0;
 
 int CLK = 1;
-
-int const REG_LENGTH = 32;
-
-int const MEM_SIZE = 1024;
 
 long registers[REG_LENGTH];
 
@@ -42,18 +43,18 @@ struct instruction_circular_buffer{
 	long hex_instr;
 	InstructionParts parts;
 
-	instruction_circular_buffer(){
-		stage = 0;
-	}
+	instruction_circular_buffer() : 
+		stage(0),
+		hex_instr(0){}
 
-} instr_circular_buffer[5];
+} instr_circular_buffer[CIRCULAR_BUFFER_SIZE];
 
-instruction_circular_buffer *stages[5];
+instruction_circular_buffer *stages[PIPELINE_SIZE];
 
 int count_inside_circular_buffer(){
 	int count = 0;
 
-	for(int k = 0; k < 5; k++){
+	for (int k = 0; k < CIRCULAR_BUFFER_SIZE; k++){
 
 		if(instr_circular_buffer[k].stage > 0) count++;
 	}
@@ -66,42 +67,37 @@ int main()
 {
 	int err = -1;
 
-	int instrCount = 0;
-
-	bool first_five = true;
-
 	err = my_util.Nullify(changed_memory_track);
 
 	if(err < 0 ) return 0;
 
-	instrCount = my_util.OpenTraceAndLoadMemory("Trace.txt", mem);
+	err = my_util.fill_with_zeroes(registers);
 
-	if (instrCount < 0)
-	{
-		return 0;
-	}
+	if (err < 0) return 0;
 
-	instrCount = 1;
-	
-	//int baseRegAdress = instrCount + 1;
+	err = my_util.OpenTraceAndLoadMemory("Trace.txt", mem);
+
+	if (err < 0) return 0;
+
 
 	// start pipeline
 
 	Pipeline p;
 
-	long result;
+	long result = 0;
+	int i = 0;
+	int erase = -1;
+	int first_five_count = 1;
 
 	while (CLK)
 	{
-		InstructionParts parsedInstr;
-		
-		int i = 0;
 
-		int erase = -1;
+		i = 0;
 
-		while(count_inside_circular_buffer() < instrCount || instrCount <= 0)
+		erase = -1;
+
+		while(count_inside_circular_buffer() < first_five_count || first_five_count <= 0)
 		{
-
 			int next_stage = instr_circular_buffer[i].stage + 1;
 
 			instr_circular_buffer[i].stage = next_stage;
@@ -118,7 +114,7 @@ int main()
 
 				// DECODE
 				case 2:
-					err = p.Decode(instr_circular_buffer[i].hex_instr, parsedInstr);
+					err = p.Decode(instr_circular_buffer[i].hex_instr, instr_circular_buffer[i].parts);
 
 					if(err < 0) return 0;
 
@@ -126,22 +122,22 @@ int main()
 				// EXECUTE
 				case 3:
 					
-					err = p.Execute(parsedInstr, registers, result, PC, my_dump);
+					err = p.Execute(instr_circular_buffer[i].parts, registers, result, PC, my_dump);
 
-					if(parsedInstr.opcode == 17) CLK = 0;
+					if (instr_circular_buffer[i].parts.opcode == 17) CLK = 0;
 
 					if(err < 0){return 0;}
 
-					if(parsedInstr.reset){
+					if (instr_circular_buffer[i].parts.reset){
 
-						for(int j = i + 1; j <= 5; j++)
+						for (int j = i + 1; j <= CIRCULAR_BUFFER_SIZE; j++)
 						{
 							instr_circular_buffer[i].stage = 0;
 						}
 
-						instrCount = 5 - i;
+						first_five_count = 5 - i;
 
-						parsedInstr.reset = false;
+						instr_circular_buffer[i].parts.reset = false;
 
 						//break; // break out of the for - inner loop
 					}
@@ -149,12 +145,12 @@ int main()
 					break;
 				// MEMEORY
 				case 4:
-					if (parsedInstr.is_load){
+					if (instr_circular_buffer[i].parts.is_load){
 						my_dump.memory_instruct += 1;
-						parsedInstr.rd = mem[static_cast<int>(result)].word;
+						instr_circular_buffer[i].parts.rd = mem[static_cast<int>(result)].word;
 					}
 
-					if (parsedInstr.is_store){
+					if (instr_circular_buffer[i].parts.is_store){
 						my_dump.memory_instruct += 1;
 						mem[static_cast<int>(result)].word = result;
 					}
@@ -162,7 +158,7 @@ int main()
 					break;
 				// WRITE BACK
 				case 5:
-					registers[parsedInstr.rd] = result;
+					registers[instr_circular_buffer[i].parts.rd] = result;
 					erase = i;
 					break;
 
@@ -181,14 +177,18 @@ int main()
 
 		}
 
-		if(count_inside_circular_buffer() < 5){
-			instrCount++;
+		if (count_inside_circular_buffer() < CIRCULAR_BUFFER_SIZE){
+			first_five_count++;
 		}else{
-			instrCount = 0;
+			first_five_count = 0;
 		}
 
-		if(erase >= 0 ) instr_circular_buffer[erase].stage = 0;
-
+		if (erase >= 0) {
+			instr_circular_buffer[erase].stage = 0;
+			
+			instr_circular_buffer[erase].parts.is_load = false;
+			instr_circular_buffer[erase].parts.is_store = false;
+		}
 	}
 
 	// DUMP

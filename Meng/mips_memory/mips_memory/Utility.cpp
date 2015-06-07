@@ -38,17 +38,6 @@ int Utility:: HexToBinary(string & hexadecimal, string & binary, bool inverse)
 
 		binary += b;
 
-		/*char *cstr = new char[b.length() + 1];
-		strcpy(cstr, b.c_str());
-		int jr = 0;
-		for (int j = (i * 4); j < (i * 4) + 4; j++){
-			
-			binary[j] = cstr[jr];
-			jr++;
-		}
-		
-
-		delete[] cstr;*/
 		error = 0;
 	}
 	return error;
@@ -121,18 +110,6 @@ int Utility::BinaryToInt(string binary, int integer, bool inverse)
 	return error;
 }
 
-string Utility::ToLittleEndian(string binary)
-{
-	string temp = "";
-
-	temp += GetBits(binary, 24, 31);
-	temp += GetBits(binary, 16, 23);
-	temp += GetBits(binary, 8, 15);
-	temp += GetBits(binary, 0, 7);
-
-	return temp;
-}
-
 string Utility::GetBits(string instr, int start, int end){
 
 	string temp;
@@ -158,6 +135,24 @@ int Utility::Nullify(int * my_array){
 	}
 
 	catch(exception ex)
+	{
+		return -1;
+	}
+
+}
+
+int Utility::fill_with_zeroes(long * my_array){
+
+	try
+	{
+		for (int x = 0; x < sizeof(my_array) / sizeof(int); x++){
+			my_array[x] = 0;
+		}
+
+		return 0;
+	}
+
+	catch (exception ex)
 	{
 		return -1;
 	}
