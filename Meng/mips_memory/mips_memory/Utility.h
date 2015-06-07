@@ -7,9 +7,11 @@
 
 using namespace std;
 
+
 class Utility{
 
 public:
+
 	int HexToBinary(string &, string &, bool);
 
 	int BinaryToInt(string, int, bool );
@@ -27,5 +29,9 @@ public:
 	string GetBits(string, int, int);
 
 	string BitsReverse(string, int, int);
+
+	int Nullify(int *);
+
+	int Flush();
 };
 

@@ -3,6 +3,7 @@
 #include "Pipeline.h"
 #include "memory.h"
 #include "Utility.h"
+#include "statistics.h"
 
 int Pipeline::Fetch(int & PC, entry* mem, long & instr){
 
@@ -21,7 +22,7 @@ int Pipeline::Fetch(int & PC, entry* mem, long & instr){
 
 }
 
-int Pipeline::Decode(long long instr, InstructionParts & parsedInstrs){
+int Pipeline::Decode(long instr, InstructionParts & parsedInstrs){
 	try
 	{
 		Utility util;
@@ -32,7 +33,7 @@ int Pipeline::Decode(long long instr, InstructionParts & parsedInstrs){
 
 		// get opcode
 
-		int opcode = strtoull(util.GetBits(binaryInstr, 0, 5).c_str(), nullptr, 2);
+		int opcode = strtoul(util.GetBits(binaryInstr, 0, 5).c_str(), nullptr, 2);
 
 		// get the instr type
 
@@ -42,17 +43,17 @@ int Pipeline::Decode(long long instr, InstructionParts & parsedInstrs){
 		if (my_util.InstructionType(opcode))
 		{
 			parsedInstrs.opcode = opcode;
-			parsedInstrs.rs = strtoull(util.GetBits(binaryInstr, 6, 10).c_str(), nullptr, 2);
-			parsedInstrs.rt = strtoull(util.GetBits(binaryInstr, 11, 15).c_str(), nullptr, 2);
-			parsedInstrs.rd = strtoull(util.GetBits(binaryInstr, 16, 20).c_str(), nullptr, 2);
+			parsedInstrs.rs = strtoul(util.GetBits(binaryInstr, 6, 10).c_str(), nullptr, 2);
+			parsedInstrs.rt = strtoul(util.GetBits(binaryInstr, 11, 15).c_str(), nullptr, 2);
+			parsedInstrs.rd = strtoul(util.GetBits(binaryInstr, 16, 20).c_str(), nullptr, 2);
 		}
 		// J -Type Instruction
 		else
 		{
 			parsedInstrs.opcode = opcode;
-			parsedInstrs.rs = strtoull(util.GetBits(binaryInstr, 6, 10).c_str(), nullptr, 2);
-			parsedInstrs.rt = strtoull(util.GetBits(binaryInstr, 11, 15).c_str(), nullptr, 2);
-			parsedInstrs.imm = strtoull(util.GetBits(binaryInstr, 16, 31).c_str(), nullptr, 2);
+			parsedInstrs.rs = strtoul(util.GetBits(binaryInstr, 6, 10).c_str(), nullptr, 2);
+			parsedInstrs.rt = strtoul(util.GetBits(binaryInstr, 11, 15).c_str(), nullptr, 2);
+			parsedInstrs.imm = strtoul(util.GetBits(binaryInstr, 16, 31).c_str(), nullptr, 2);
 		}
 
 		return 0;
@@ -63,14 +64,18 @@ int Pipeline::Decode(long long instr, InstructionParts & parsedInstrs){
 	}
 }
 
-int Pipeline::Execute(InstructionParts & parsedInstr, long * registers, long & result, int & PC)
+int Pipeline::Execute(InstructionParts & parsedInstr, 
+					  long * registers, 
+					  long & result, 
+					  int & PC,
+					  statistics & my_dump)
 {
 
 	long source1 = 0;
 	long source2 = 0;
 	long destination = 0;
 
-	if (parsedInstr.insr_type) // I-TYPE
+	if (!parsedInstr.insr_type)  // J - Type
 	{
 		source1 = registers[parsedInstr.rs];
 		source2 = registers[parsedInstr.rt];
@@ -78,28 +83,35 @@ int Pipeline::Execute(InstructionParts & parsedInstr, long * registers, long & r
 		switch (parsedInstr.opcode)
 		{
 		case 0:		// ADD
+			my_dump.arith_instruct += 1;
 			result = source1 + source2;
 			break;
 		case 2:		// SUB
+			my_dump.arith_instruct += 1;
 			result = source1 - source2;
 			break;
 		case 4:		// MUL
+			my_dump.arith_instruct += 1;
 			result = source1 * source2;
 			break;
 		case 6:		// OR
+			my_dump.logic_instruct += 1;
 			result = source1 | source2;
 			break;
 		case 8:		// AND  
+			my_dump.logic_instruct += 1;
 			result = source1 & source2;
 			break;
 		case 10:	// XOR
+			my_dump.logic_instruct += 1;
 			result = source1 ^ source2;
 			break;
 		default:	// HALT
+			cout << "Cannot process this opcode : " << parsedInstr.opcode << endl;
 			break;
 		}
 	}
-	else  // J - Type
+	else // I-TYPE
 	{
 		source1 = registers[parsedInstr.rs];
 		source2 = parsedInstr.imm;
@@ -107,21 +119,27 @@ int Pipeline::Execute(InstructionParts & parsedInstr, long * registers, long & r
 		switch (parsedInstr.opcode)
 		{
 		case 1:		// ADDI
+			my_dump.arith_instruct += 1;
 			result = source1 + source2;
 			break;
 		case 3:		// SUBI
+			my_dump.arith_instruct += 1;
 			result = source1 - source2;
 			break;
 		case 5:		// MULI
+			my_dump.arith_instruct += 1;
 			result = source1 * source2;
 			break;
 		case 7:		// ORI
+			my_dump.logic_instruct += 1;
 			result = source1 | source2;
 			break;
 		case 9:		// ANDI
+			my_dump.logic_instruct += 1;
 			result = source1 & source2;
 			break;
 		case 11:	// XORI
+			my_dump.logic_instruct += 1;
 			result = source1 ^ source2;
 			break;
 		case 12:	// LDW
@@ -129,17 +147,22 @@ int Pipeline::Execute(InstructionParts & parsedInstr, long * registers, long & r
 			// Eff Address = source1 + source2;
 			parsedInstr.is_load = true;
 			parsedInstr.is_store = false;
+
 			result = source1 + source2;
 			break;
 		case 13:	// STW
 			// Eff address = source1 + source2;
 			parsedInstr.is_load = false;
 			parsedInstr.is_store = true;
+
 			result = source1 + source2;
 			break;
 		case 14:	// BZ
-			if (parsedInstr.rs == 0)
+			
+			if (source1 == 0)
 			{
+				my_dump.control_instruct += 1;
+
 				PC += source2;
 
 				parsedInstr.reset = true;
@@ -149,16 +172,36 @@ int Pipeline::Execute(InstructionParts & parsedInstr, long * registers, long & r
 
 			break;
 		case 15:	// BEQ
+			
+			source2 = registers[parsedInstr.rt];
+
+			if (source1 == source2)
+			{
+				my_dump.control_instruct += 1;
+
+				PC += parsedInstr.imm;
+
+				parsedInstr.reset = true;
+			}
+
+			parsedInstr.reset = false;
 			break;
 		case 16:	// JR
+			
+			my_dump.control_instruct += 1;
+
+			PC += source1;
+
+			parsedInstr.reset = true;
+
 			break;
 		default:	// HALT
-			break;
+			cout << "Cannot process this opcode : " << parsedInstr.opcode << endl;
 		}
 
 	}
 
-	return -1;
+	return 0;
 }
 
 int Pipeline::Memory(){

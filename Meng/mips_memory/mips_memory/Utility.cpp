@@ -32,7 +32,7 @@ int Utility:: HexToBinary(string & hexadecimal, string & binary, bool inverse)
 
 	// HEX to Binary
 
-	for (int i = 0; i < hexadecimal.length(); i++){
+	for (int i = 0; i < (int)hexadecimal.length(); i++){
 
 		string b = GetBinaryFromHexadecimal(hexadecimal[i]);
 
@@ -74,7 +74,7 @@ int Utility::OpenTraceAndLoadMemory(string filename, entry* mem)
 
 			// changes binary string to long. 
 			// changes the format of binary string.
-			long long b = stoll(binary, nullptr, 2);
+			long b = stol(binary, nullptr, 2);
 
 			// store b to the memory
 
@@ -143,6 +143,24 @@ string Utility::GetBits(string instr, int start, int end){
 	}
 
 	return temp;
+
+}
+
+int Utility::Nullify(int * my_array){
+
+	try
+	{
+		for(int x = 0; x < sizeof(my_array)/sizeof(int); x++){
+			my_array[x] = NULL;
+		}
+
+		return 0;
+	}
+
+	catch(exception ex)
+	{
+		return -1;
+	}
 
 }
 

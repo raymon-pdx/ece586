@@ -20,7 +20,7 @@ const int LineSize = 1024;
 struct entry
 {
 	long address; // memory line address
-	long long word;
+	long word;
 
 	long regAddress;
 	long regData;

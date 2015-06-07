@@ -6,6 +6,7 @@
 #include <cctype>
 #include <bitset>
 #include "memory.h"
+#include "statistics.h"
 
 using namespace std;
 
@@ -23,6 +24,8 @@ struct InstructionParts {
 	bool is_store;
 
 	bool reset;
+
+	InstructionParts() : is_load(false),is_store(false), reset(false){}
 };
 
 class Pipeline
@@ -30,8 +33,8 @@ class Pipeline
 
 public:
 	int Fetch(int &, entry*, long &);
-	int Decode(long long, InstructionParts &);
-	int Execute(InstructionParts &, long *, long &, int &);
+	int Decode(long, InstructionParts &);
+	int Execute(InstructionParts &, long *, long &, int &, statistics &);
 	int Memory();
 	int WriteBack();
 
