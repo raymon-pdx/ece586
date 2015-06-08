@@ -51,7 +51,8 @@ struct instruction_circular_buffer{
 
 instruction_circular_buffer *stages[PIPELINE_SIZE];
 
-int count_inside_circular_buffer(){
+int count_inside_circular_buffer()
+{
 	int count = 0;
 
 	for (int k = 0; k < CIRCULAR_BUFFER_SIZE; k++){
@@ -60,6 +61,21 @@ int count_inside_circular_buffer(){
 	}
 
 	return count;
+}
+
+void reset_buffer(instruction_circular_buffer * buffer, int index)
+{
+	instr_circular_buffer[index].stage = 0;
+	instr_circular_buffer[index].hex_instr = 0;
+	instr_circular_buffer[index].parts.is_load = false;
+	instr_circular_buffer[index].parts.is_store = false;
+	instr_circular_buffer[index].parts.reset = false;
+	instr_circular_buffer[index].parts.imm = 0;
+	instr_circular_buffer[index].parts.opcode = 0;
+	instr_circular_buffer[index].parts.rd = 0;
+	instr_circular_buffer[index].parts.rs = 0;
+	instr_circular_buffer[index].parts.rt = 0;
+	instr_circular_buffer[index].parts.result = 0;
 }
 
 
@@ -84,31 +100,38 @@ int main()
 
 	Pipeline p;
 
-	long result = 0;
-	int i = 0;
+	int k = 0;
+	int start = 0;
 	int erase = -1;
 	int first_five_count = 1;
 
 	while (CLK)
 	{
+		
+		k = count_inside_circular_buffer();
 
-		i = 0;
+		if(k < 5)
+		{
+			k++;
+		}
 
 		erase = -1;
 
-		while(count_inside_circular_buffer() < first_five_count || first_five_count <= 0)
+		/*while((count_inside_circular_buffer() < first_five_count || first_five_count == 0) && CLK)*/
+		for(int i = start; i < k; i++)
 		{
 			int next_stage = instr_circular_buffer[i].stage + 1;
 
 			instr_circular_buffer[i].stage = next_stage;
 
-			switch (next_stage){
+			switch (next_stage)
+			{
 
 				// FETCH
 				case 1:
 					instr_circular_buffer[i].hex_instr = mem[PC].word;
 					PC++;
-					my_dump.total_pc += 1;
+					my_dump.total_instruct += 1;
 
 					break;
 
@@ -122,22 +145,27 @@ int main()
 				// EXECUTE
 				case 3:
 					
-					err = p.Execute(instr_circular_buffer[i].parts, registers, result, PC, my_dump);
+					err = p.Execute(instr_circular_buffer[i].parts, registers, PC, my_dump);
 
-					if (instr_circular_buffer[i].parts.opcode == 17) CLK = 0;
+					if (instr_circular_buffer[i].parts.opcode == 17) {
+						CLK = 0;
+					}
 
 					if(err < 0){return 0;}
 
 					if (instr_circular_buffer[i].parts.reset){
 
-						for (int j = i + 1; j <= CIRCULAR_BUFFER_SIZE; j++)
+						for (int j = i; j < CIRCULAR_BUFFER_SIZE; j++)
 						{
-							instr_circular_buffer[i].stage = 0;
+							reset_buffer(instr_circular_buffer, j);							
 						}
 
-						first_five_count = 5 - i;
-
 						instr_circular_buffer[i].parts.reset = false;
+
+						start = 0;
+						i = k;
+
+						//first_five_count = 5 - i;
 
 						//break; // break out of the for - inner loop
 					}
@@ -147,47 +175,32 @@ int main()
 				case 4:
 					if (instr_circular_buffer[i].parts.is_load){
 						my_dump.memory_instruct += 1;
-						instr_circular_buffer[i].parts.rd = mem[static_cast<int>(result)].word;
+						instr_circular_buffer[i].parts.rt = mem[instr_circular_buffer[i].parts.result].word;
 					}
 
 					if (instr_circular_buffer[i].parts.is_store){
 						my_dump.memory_instruct += 1;
-						mem[static_cast<int>(result)].word = result;
+						mem[instr_circular_buffer[i].parts.result].word = instr_circular_buffer[i].parts.rt;
+						//mem[static_cast<int>(result)].word = result;
 					}
 
 					break;
 				// WRITE BACK
 				case 5:
-					registers[instr_circular_buffer[i].parts.rd] = result;
+					registers[instr_circular_buffer[i].parts.rd] = instr_circular_buffer[i].parts.result;
 					erase = i;
 					break;
 
 				// Out of the pipeline..... somethign is wrong
 				default:
-					return 0;
-			}
+					break;
+					//return 0;
 
-			i++;
-
-			if(i > 4) 
-			{
-				i = 0; 
-				if(erase >= 0 ) instr_circular_buffer[erase].stage = 0;
-			}
-
-		}
-
-		if (count_inside_circular_buffer() < CIRCULAR_BUFFER_SIZE){
-			first_five_count++;
-		}else{
-			first_five_count = 0;
+			} // end switch - case
 		}
 
 		if (erase >= 0) {
-			instr_circular_buffer[erase].stage = 0;
-			
-			instr_circular_buffer[erase].parts.is_load = false;
-			instr_circular_buffer[erase].parts.is_store = false;
+			reset_buffer(instr_circular_buffer, erase);
 		}
 	}
 

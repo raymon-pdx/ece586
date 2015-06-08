@@ -6,7 +6,7 @@ void dump:: dump_all(statistics & my_dump,
 			  int * changed_memory_track){
 
 	cout << "Look at all my dumps\n" << endl;
-	cout << "Total number of instructions: " << my_dump.total_pc << endl;
+	cout << "Total number of instructions: " << my_dump.total_instruct << endl;
 	cout << "Arithmetic instructions: " << my_dump.arith_instruct << endl;
 	cout << "Logical instructions: " << my_dump.logic_instruct << endl;
 	cout << "Memory access instructions: " << my_dump.memory_instruct << endl;

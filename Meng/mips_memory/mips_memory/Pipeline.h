@@ -18,6 +18,8 @@ struct InstructionParts {
 	int rd;
 	int imm;
 
+	long result;
+
 	bool insr_type;
 
 	bool is_load;
@@ -32,7 +34,8 @@ struct InstructionParts {
 		rs(0),
 		rt(0),
 		rd(0),
-		imm(0){}
+		imm(0),
+		result(0){}
 };
 
 class Pipeline
@@ -41,7 +44,7 @@ class Pipeline
 public:
 	int Fetch(int &, entry*, long &);
 	int Decode(long, InstructionParts &);
-	int Execute(InstructionParts &, long *, long &, int &, statistics &);
+	int Execute(InstructionParts &, long *, int &, statistics &);
 	int Memory();
 	int WriteBack();
 
