@@ -50,17 +50,17 @@ int Pipeline::Decode(long instr, InstructionParts & parsedInstrs){
 		{
 			parsedInstrs.opcode = opcode;
 			parsedInstrs.insr_type = instrType;
-			parsedInstrs.rs = strtoul(util.GetBits(binaryInstr, 6, 10).c_str(), nullptr, 2) + 1;
-			parsedInstrs.rt = strtoul(util.GetBits(binaryInstr, 11, 15).c_str(), nullptr, 2) + 1 ;
-			parsedInstrs.rd = strtoul(util.GetBits(binaryInstr, 16, 20).c_str(), nullptr, 2) + 1;
+			parsedInstrs.rs = strtoul(util.GetBits(binaryInstr, 6, 10).c_str(), nullptr, 2);
+			parsedInstrs.rt = strtoul(util.GetBits(binaryInstr, 11, 15).c_str(), nullptr, 2);
+			parsedInstrs.rd = strtoul(util.GetBits(binaryInstr, 16, 20).c_str(), nullptr, 2);
 		}
 		//I - Type Instruction
 		else
 		{
 			parsedInstrs.opcode = opcode;
 			parsedInstrs.insr_type = instrType;
-			parsedInstrs.rs = strtoul(util.GetBits(binaryInstr, 6, 10).c_str(), nullptr, 2) + 1;
-			parsedInstrs.rt = strtoul(util.GetBits(binaryInstr, 11, 15).c_str(), nullptr, 2) + 1;
+			parsedInstrs.rs = strtoul(util.GetBits(binaryInstr, 6, 10).c_str(), nullptr, 2);
+			parsedInstrs.rt = strtoul(util.GetBits(binaryInstr, 11, 15).c_str(), nullptr, 2);
 			parsedInstrs.imm = strtoul(util.GetBits(binaryInstr, 16, 31).c_str(), nullptr, 2);
 		}
 
@@ -178,8 +178,6 @@ int Pipeline::Execute(InstructionParts & parsedInstr,
 
 			break;
 		case 15:	// BEQ
-
-			rt = registers[parsedInstr.rt];
 
 			if (rs == rt)
 			{

@@ -25,7 +25,7 @@ using namespace std;
 
 int PC = 0;
 
-int HALT = 1;
+bool HALT = false;
 
 long registers[REG_LENGTH];
 
@@ -107,7 +107,7 @@ int main()
 	int erase = -1;
 	int first_five_count = 1;
 
-	while (HALT)
+	while (!HALT)
 	{
 		
 		k = count_inside_circular_buffer();
@@ -122,7 +122,6 @@ int main()
 		i = 0;
 
 		while(i < k && !abort)
-		//for(int i = start; i < k; i++)
 		{
 			int next_stage = instr_circular_buffer[i].stage + 1;
 
@@ -154,7 +153,7 @@ int main()
 					if(err < 0){return 0;}
 					
 					if (instr_circular_buffer[i].parts.opcode == 17) {
-						HALT = 0;
+						HALT = true;
 					}
 
 					if (instr_circular_buffer[i].parts.reset){
@@ -168,12 +167,6 @@ int main()
 
 						abort = true;
 
-						/*start = 0;
-						i = k;*/
-
-						//first_five_count = 5 - i;
-
-						//break; // break out of the for - inner loop
 					}
 
 					break;
@@ -181,6 +174,7 @@ int main()
 				case 4:
 					if (instr_circular_buffer[i].parts.is_load){
 						my_dump.memory_instruct += 1;
+
 						registers[instr_circular_buffer[i].parts.rt] = mem[instr_circular_buffer[i].parts.result].word;
 					}
 
@@ -189,11 +183,23 @@ int main()
 						mem[instr_circular_buffer[i].parts.result].word = registers[instr_circular_buffer[i].parts.rt];
 					}
 
+					reset_buffer(instr_circular_buffer, i);
+
 					break;
 				// WRITE BACK
 				case 5:
-					registers[instr_circular_buffer[i].parts.rd] = instr_circular_buffer[i].parts.result;
-					erase = i;
+					if(!instr_circular_buffer[i].parts.is_load 
+						|| !instr_circular_buffer[i].parts.is_store)
+					{
+						if(instr_circular_buffer[i].parts.insr_type){  //  J-type
+							registers[instr_circular_buffer[i].parts.rd] = instr_circular_buffer[i].parts.result;
+						}else{  // I-type
+							registers[instr_circular_buffer[i].parts.rt] = instr_circular_buffer[i].parts.result;
+						}
+					}
+
+					reset_buffer(instr_circular_buffer, i);
+
 					break;
 
 				// Out of the pipeline..... somethign is wrong
@@ -203,13 +209,17 @@ int main()
 
 			} // end switch - case
 
-			i++;
-		}
+			i++; // Go to next buffer
 
-		if (erase >= 0) {
-			reset_buffer(instr_circular_buffer, erase);
-		}
-	}
+		} // End of Inner While
+
+
+		// Erase the last instruction that was completed from MEM and WB stage
+		//if (erase >= 0) {
+			//reset_buffer(instr_circular_buffer, erase);
+		//}
+
+	} // End of Outer While
 
 	// DUMP
 	dump dumper;
