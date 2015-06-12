@@ -25,7 +25,7 @@ using namespace std;
 
 int PC = 0;
 
-int CLK = 1;
+int HALT = 1;
 
 long registers[REG_LENGTH];
 
@@ -100,12 +100,14 @@ int main()
 
 	Pipeline p;
 
+	bool abort;
 	int k = 0;
+	int i = 0;
 	int start = 0;
 	int erase = -1;
 	int first_five_count = 1;
 
-	while (CLK)
+	while (HALT)
 	{
 		
 		k = count_inside_circular_buffer();
@@ -115,10 +117,12 @@ int main()
 			k++;
 		}
 
+		abort = false;
 		erase = -1;
+		i = 0;
 
-		/*while((count_inside_circular_buffer() < first_five_count || first_five_count == 0) && CLK)*/
-		for(int i = start; i < k; i++)
+		while(i < k && !abort)
+		//for(int i = start; i < k; i++)
 		{
 			int next_stage = instr_circular_buffer[i].stage + 1;
 
@@ -146,12 +150,12 @@ int main()
 				case 3:
 					
 					err = p.Execute(instr_circular_buffer[i].parts, registers, PC, my_dump);
-
-					if (instr_circular_buffer[i].parts.opcode == 17) {
-						CLK = 0;
-					}
-
+					
 					if(err < 0){return 0;}
+					
+					if (instr_circular_buffer[i].parts.opcode == 17) {
+						HALT = 0;
+					}
 
 					if (instr_circular_buffer[i].parts.reset){
 
@@ -162,8 +166,10 @@ int main()
 
 						instr_circular_buffer[i].parts.reset = false;
 
-						start = 0;
-						i = k;
+						abort = true;
+
+						/*start = 0;
+						i = k;*/
 
 						//first_five_count = 5 - i;
 
@@ -175,13 +181,12 @@ int main()
 				case 4:
 					if (instr_circular_buffer[i].parts.is_load){
 						my_dump.memory_instruct += 1;
-						instr_circular_buffer[i].parts.rt = mem[instr_circular_buffer[i].parts.result].word;
+						registers[instr_circular_buffer[i].parts.rt] = mem[instr_circular_buffer[i].parts.result].word;
 					}
 
 					if (instr_circular_buffer[i].parts.is_store){
 						my_dump.memory_instruct += 1;
-						mem[instr_circular_buffer[i].parts.result].word = instr_circular_buffer[i].parts.rt;
-						//mem[static_cast<int>(result)].word = result;
+						mem[instr_circular_buffer[i].parts.result].word = registers[instr_circular_buffer[i].parts.rt];
 					}
 
 					break;
@@ -197,6 +202,8 @@ int main()
 					//return 0;
 
 			} // end switch - case
+
+			i++;
 		}
 
 		if (erase >= 0) {

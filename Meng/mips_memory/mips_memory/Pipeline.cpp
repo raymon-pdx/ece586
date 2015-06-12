@@ -60,7 +60,7 @@ int Pipeline::Decode(long instr, InstructionParts & parsedInstrs){
 			parsedInstrs.opcode = opcode;
 			parsedInstrs.insr_type = instrType;
 			parsedInstrs.rs = strtoul(util.GetBits(binaryInstr, 6, 10).c_str(), nullptr, 2) + 1;
-			parsedInstrs.rd = strtoul(util.GetBits(binaryInstr, 11, 15).c_str(), nullptr, 2) + 1;
+			parsedInstrs.rt = strtoul(util.GetBits(binaryInstr, 11, 15).c_str(), nullptr, 2) + 1;
 			parsedInstrs.imm = strtoul(util.GetBits(binaryInstr, 16, 31).c_str(), nullptr, 2);
 		}
 
@@ -78,40 +78,40 @@ int Pipeline::Execute(InstructionParts & parsedInstr,
 					  statistics & my_dump)
 {
 
-	long source1 = 0;
-	long source2 = 0;
-	long destination = 0;
+	long rs = 0;
+	long rt = 0;
+	long immediate = 0;
 
 	if (parsedInstr.insr_type)  // J- type
 	{
-		source1 = registers[parsedInstr.rs];
-		source2 = registers[parsedInstr.rt];
+		rs = registers[parsedInstr.rs];
+		rt = registers[parsedInstr.rt];
 
 		switch (parsedInstr.opcode)
 		{
 		case 0:		// ADD
 			my_dump.arith_instruct += 1;
-			parsedInstr.result = source1 + source2;
+			parsedInstr.result = rs + rt;
 			break;
 		case 2:		// SUB
 			my_dump.arith_instruct += 1;
-			parsedInstr.result = source1 - source2;
+			parsedInstr.result = rs - rt;
 			break;
 		case 4:		// MUL
 			my_dump.arith_instruct += 1;
-			parsedInstr.result = source1 * source2;
+			parsedInstr.result = rs * rt;
 			break;
 		case 6:		// OR
 			my_dump.logic_instruct += 1;
-			parsedInstr.result = source1 | source2;
+			parsedInstr.result = rs | rt;
 			break;
 		case 8:		// AND  
 			my_dump.logic_instruct += 1;
-			parsedInstr.result = source1 & source2;
+			parsedInstr.result = rs & rt;
 			break;
 		case 10:	// XOR
 			my_dump.logic_instruct += 1;
-			parsedInstr.result = source1 ^ source2;
+			parsedInstr.result = rs ^ rt;
 			break;
 		default:	// HALT
 			cout << "Cannot process this opcode : " << parsedInstr.opcode << "hex: " << parsedInstr.insr_type <<endl;
@@ -120,55 +120,56 @@ int Pipeline::Execute(InstructionParts & parsedInstr,
 	}
 	else // I-TYPE
 	{
-		source1 = registers[parsedInstr.rs];
-		source2 = parsedInstr.imm;
+		rs = registers[parsedInstr.rs];
+		rt = registers[parsedInstr.rt];
+		immediate = parsedInstr.imm;
 
 		switch (parsedInstr.opcode)
 		{
 		case 1:		// ADDI
 			my_dump.arith_instruct += 1;
-			parsedInstr.result = source1 + source2;
+			parsedInstr.result = rs + immediate;
 			break;
 		case 3:		// SUBI
 			my_dump.arith_instruct += 1;
-			parsedInstr.result = source1 - source2;
+			parsedInstr.result = rs - immediate;
 			break;
 		case 5:		// MULI
 			my_dump.arith_instruct += 1;
-			parsedInstr.result = source1 * source2;
+			parsedInstr.result = rs * immediate;
 			break;
 		case 7:		// ORI
 			my_dump.logic_instruct += 1;
-			parsedInstr.result = source1 | source2;
+			parsedInstr.result = rs | immediate;
 			break;
 		case 9:		// ANDI
 			my_dump.logic_instruct += 1;
-			parsedInstr.result = source1 & source2;
+			parsedInstr.result = rs & immediate;
 			break;
 		case 11:	// XORI
 			my_dump.logic_instruct += 1;
-			parsedInstr.result = source1 ^ source2;
+			parsedInstr.result = rs ^ immediate;
 			break;
 		case 12:	// LDW
 			// goto memory
-			parsedInstr.result = source1 + source2;
+			parsedInstr.result = rs + immediate;
 			parsedInstr.is_load = true;
 			parsedInstr.is_store = false;
 
 			break;
 		case 13:	// STW
-			parsedInstr.result = source1 + source2;
+			parsedInstr.result = rs + immediate;
 			parsedInstr.is_load = false;
 			parsedInstr.is_store = true;
 
 			break;
 		case 14:	// BZ
 
-			if (source1 == 0)
+			if (rs == 0)
 			{
 				my_dump.control_instruct += 1;
 
-				PC += parsedInstr.imm;
+				PC += immediate;
 
 				parsedInstr.reset = true;
 			}else{
@@ -178,13 +179,13 @@ int Pipeline::Execute(InstructionParts & parsedInstr,
 			break;
 		case 15:	// BEQ
 
-			source2 = registers[parsedInstr.rt];
+			rt = registers[parsedInstr.rt];
 
-			if (source1 == source2)
+			if (rs == rt)
 			{
 				my_dump.control_instruct += 1;
 
-				PC += parsedInstr.imm;
+				PC +=  immediate;
 
 				parsedInstr.reset = true;
 			}else{
@@ -196,14 +197,14 @@ int Pipeline::Execute(InstructionParts & parsedInstr,
 
 			my_dump.control_instruct += 1;
 
-			PC = source1;
+			PC = rs;
 
 			parsedInstr.reset = true;
 
 			break;
-		case 17:
+		case 17:	// HALT
 			break;
-		default:	// HALT
+		default:	
 			cout << "Cannot process this opcode : " << parsedInstr.opcode << endl;
 		}
 	}
