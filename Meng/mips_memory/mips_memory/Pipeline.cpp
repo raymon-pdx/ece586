@@ -33,7 +33,7 @@ int Pipeline::Decode(long instr, InstructionParts & parsedInstrs){
 
 		// get opcode
 
-		int opcode = strtoul(util.GetBits(binaryInstr, 0, 5).c_str(), nullptr, 2);
+		signed long opcode = strtoul(util.GetBits(binaryInstr, 0, 5).c_str(), nullptr, 2);
 
 		// get the instr type
 
@@ -78,9 +78,9 @@ int Pipeline::Execute(InstructionParts & parsedInstr,
 					  statistics & my_dump)
 {
 
-	long rs = 0;
-	long rt = 0;
-	long immediate = 0;
+	signed long rs = 0;
+	signed long rt = 0;
+	signed long immediate = 0;
 
 	if (parsedInstr.insr_type)  // J- type
 	{
@@ -152,13 +152,13 @@ int Pipeline::Execute(InstructionParts & parsedInstr,
 			break;
 		case 12:	// LDW
 			// goto memory
-			parsedInstr.result = rs + immediate;
+			parsedInstr.result = (rs + immediate)/4;
 			parsedInstr.is_load = true;
 			parsedInstr.is_store = false;
 
 			break;
 		case 13:	// STW
-			parsedInstr.result = rs + immediate;
+			parsedInstr.result = (rs + immediate)/4;
 			parsedInstr.is_load = false;
 			parsedInstr.is_store = true;
 
@@ -168,6 +168,8 @@ int Pipeline::Execute(InstructionParts & parsedInstr,
 			if (rs == 0)
 			{
 				my_dump.control_instruct += 1;
+
+				PC = parsedInstr.this_pc;
 
 				PC += immediate;
 
@@ -183,7 +185,9 @@ int Pipeline::Execute(InstructionParts & parsedInstr,
 			{
 				my_dump.control_instruct += 1;
 
-				PC +=  immediate;
+				PC = parsedInstr.this_pc;
+
+				PC += immediate;
 
 				parsedInstr.reset = true;
 			}else{
@@ -195,7 +199,7 @@ int Pipeline::Execute(InstructionParts & parsedInstr,
 
 			my_dump.control_instruct += 1;
 
-			PC = rs;
+			PC = rs/4;
 
 			parsedInstr.reset = true;
 

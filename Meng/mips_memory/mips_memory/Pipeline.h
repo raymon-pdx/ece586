@@ -12,13 +12,15 @@ using namespace std;
 
 
 struct InstructionParts {
-	int opcode;
-	int rs;
-	int rt;
-	int rd;
-	int imm;
+	signed long opcode;
+	signed long rs;
+	signed long rt;
+	signed long rd;
+	signed long imm;
 
-	long result;
+	signed long result;
+
+	int this_pc;
 
 	bool insr_type;
 
@@ -35,7 +37,8 @@ struct InstructionParts {
 		rt(0),
 		rd(0),
 		imm(0),
-		result(0){}
+		result(0),
+		this_pc(0){}
 };
 
 class Pipeline

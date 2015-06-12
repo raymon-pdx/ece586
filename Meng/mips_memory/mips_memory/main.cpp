@@ -49,7 +49,6 @@ struct instruction_circular_buffer{
 
 } instr_circular_buffer[CIRCULAR_BUFFER_SIZE];
 
-instruction_circular_buffer *stages[PIPELINE_SIZE];
 
 int count_inside_circular_buffer()
 {
@@ -95,16 +94,25 @@ int main()
 
 	if (err < 0) return 0;
 
+	
+
 
 	// start pipeline
 
 	Pipeline p;
 
+	/*InstructionParts parts[MEM_SIZE];
+
+	for(int i = 0; i < MEM_SIZE; i++){
+		p.Decode(mem[i].word, parts[i]);
+	}
+
+	return 0;*/
+
 	bool abort;
 	int k = 0;
 	int i = 0;
 	int start = 0;
-	int erase = -1;
 	int first_five_count = 1;
 
 	while (!HALT)
@@ -112,13 +120,9 @@ int main()
 		
 		k = count_inside_circular_buffer();
 
-		if(k < 5)
-		{
-			k++;
-		}
+		if(k < 5){k++;}
 
 		abort = false;
-		erase = -1;
 		i = 0;
 
 		while(i < k && !abort)
@@ -133,6 +137,7 @@ int main()
 				// FETCH
 				case 1:
 					instr_circular_buffer[i].hex_instr = mem[PC].word;
+					instr_circular_buffer[i].parts.this_pc = PC;
 					PC++;
 					my_dump.total_instruct += 1;
 
@@ -153,6 +158,7 @@ int main()
 					if(err < 0){return 0;}
 					
 					if (instr_circular_buffer[i].parts.opcode == 17) {
+						
 						HALT = true;
 					}
 
@@ -176,14 +182,17 @@ int main()
 						my_dump.memory_instruct += 1;
 
 						registers[instr_circular_buffer[i].parts.rt] = mem[instr_circular_buffer[i].parts.result].word;
+
+						reset_buffer(instr_circular_buffer, i);
 					}
 
 					if (instr_circular_buffer[i].parts.is_store){
 						my_dump.memory_instruct += 1;
-						mem[instr_circular_buffer[i].parts.result].word = registers[instr_circular_buffer[i].parts.rt];
-					}
 
-					reset_buffer(instr_circular_buffer, i);
+						mem[instr_circular_buffer[i].parts.result].word = registers[instr_circular_buffer[i].parts.rt];
+
+						reset_buffer(instr_circular_buffer, i);
+					}
 
 					break;
 				// WRITE BACK
@@ -193,13 +202,12 @@ int main()
 					{
 						if(instr_circular_buffer[i].parts.insr_type){  //  J-type
 							registers[instr_circular_buffer[i].parts.rd] = instr_circular_buffer[i].parts.result;
+							reset_buffer(instr_circular_buffer, i);
 						}else{  // I-type
 							registers[instr_circular_buffer[i].parts.rt] = instr_circular_buffer[i].parts.result;
+							reset_buffer(instr_circular_buffer, i);
 						}
 					}
-
-					reset_buffer(instr_circular_buffer, i);
-
 					break;
 
 				// Out of the pipeline..... somethign is wrong
@@ -212,13 +220,6 @@ int main()
 			i++; // Go to next buffer
 
 		} // End of Inner While
-
-
-		// Erase the last instruction that was completed from MEM and WB stage
-		//if (erase >= 0) {
-			//reset_buffer(instr_circular_buffer, erase);
-		//}
-
 	} // End of Outer While
 
 	// DUMP

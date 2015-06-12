@@ -21,9 +21,6 @@ struct entry
 {
 	long address; // memory line address
 	long word;
-
-	long regAddress;
-	long regData;
 };
 
 
